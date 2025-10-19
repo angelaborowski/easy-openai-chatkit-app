@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <style>
+        /* Comet-style Assistant Widget */
+        .assistant-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .assistant-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .assistant-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .assistant-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .assistant-icon {
+            color: white;
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .assistant-toggle.active .assistant-icon {
+            transform: rotate(45deg);
+        }
+
+        .assistant-panel {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .assistant-panel.active {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .assistant-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .assistant-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .assistant-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            margin: 2px 0 0 0;
+        }
+
+        .assistant-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .assistant-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .assistant-content {
+            height: calc(100% - 60px);
+            position: relative;
+        }
+
+        .assistant-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #f8f9fa;
+        }
+
+        .assistant-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .assistant-panel {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 100px);
+                bottom: 80px;
+                right: 20px;
+                left: 20px;
+            }
+            
+            .assistant-widget {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        /* Pulse animation for new messages */
+        .assistant-toggle.has-notification {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.8), 0 0 0 10px rgba(102, 126, 234, 0.1);
+            }
+            100% {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Assistant Widget -->
+    <div class="assistant-widget">
+        <!-- Toggle Button -->
+        <button class="assistant-toggle" id="assistantToggle">
+            <span class="assistant-icon">💬</span>
+        </button>
+        
+        <!-- Chat Panel -->
+        <div class="assistant-panel" id="assistantPanel">
+            <div class="assistant-header">
+                <div>
+                    <h3 class="assistant-title">AI Assistant</h3>
+                    <p class="assistant-subtitle">How can I help you today?</p>
+                </div>
+                <button class="assistant-close" id="assistantClose">×</button>
+            </div>
+            <div class="assistant-content">
+                <div class="assistant-loading" id="assistantLoading">Loading assistant...</div>
+                <iframe 
+                    class="assistant-iframe" 
+                    id="assistantIframe"
+                    src="https://openai-chatkit-starter-app-one-black.vercel.app"
+                    style="display: none;">
+                </iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AssistantWidget {
+            constructor() {
+                this.toggle = document.getElementById('assistantToggle');
+                this.panel = document.getElementById('assistantPanel');
+                this.close = document.getElementById('assistantClose');
+                this.iframe = document.getElementById('assistantIframe');
+                this.loading = document.getElementById('assistantLoading');
+                this.isOpen = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.toggle.addEventListener('click', () => this.togglePanel());
+                this.close.addEventListener('click', () => this.closePanel());
+                
+                // Close panel when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (this.isOpen && !this.panel.contains(e.target) && !this.toggle.contains(e.target)) {
+                        this.closePanel();
+                    }
+                });
+                
+                // Handle iframe load
+                this.iframe.addEventListener('load', () => {
+                    this.loading.style.display = 'none';
+                    this.iframe.style.display = 'block';
+                });
+                
+                // Handle escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.isOpen) {
+                        this.closePanel();
+                    }
+                });
+            }
+            
+            togglePanel() {
+                if (this.isOpen) {
+                    this.closePanel();
+                } else {
+                    this.openPanel();
+                }
+            }
+            
+            openPanel() {
+                this.isOpen = true;
+                this.panel.classList.add('active');
+                this.toggle.classList.add('active');
+                this.toggle.classList.remove('has-notification');
+                
+                // Load iframe when first opened
+                if (this.iframe.style.display === 'none') {
+                    this.loading.style.display = 'block';
+                    this.iframe.style.display = 'none';
+                }
+            }
+            
+            closePanel() {
+                this.isOpen = false;
+                this.panel.classList.remove('active');
+                this.toggle.classList.remove('active');
+            }
+            
+            // Method to show notification (can be called from your site)
+            showNotification() {
+                if (!this.isOpen) {
+                    this.toggle.classList.add('has-notification');
+                }
+            }
+        }
+        
+        // Initialize the assistant widget
+        const assistant = new AssistantWidget();
+        
+        // Expose to global scope for external control
+        window.AssistantWidget = assistant;
+        
+        // Example: Show notification after 5 seconds (remove this in production)
+        // setTimeout(() => assistant.showNotification(), 5000);
+    </script>
+</body>
+</html>
