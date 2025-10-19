@@ -11,31 +11,13 @@ export const STARTER_PROMPTS: StartScreenPrompt[] = [
     prompt: "What can you do?",
     icon: "circle-question",
   },
-  {
-    label: "Help me get started",
-    prompt: "Help me get started with this course",
-    icon: "play",
-  },
-  {
-    label: "Explain a concept",
-    prompt: "Can you explain this concept in simple terms?",
-    icon: "lightbulb",
-  },
 ];
 
-export const PLACEHOLDER_INPUT = "Ask me anything about this course...";
+export const PLACEHOLDER_INPUT = "Ask anything...";
 
-export const GREETING = "Hi! I'm your AI course assistant. How can I help you today?";
+export const GREETING = "How can I help you today?";
 
 export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
-  colorScheme: theme,
-  radius: "round",
-  density: "normal",
-  typography: {
-    baseSize: 16,
-    fontFamily: '"OpenAI Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    fontFamilyMono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-  },
   color: {
     grayscale: {
       hue: 220,
@@ -47,4 +29,7 @@ export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
       level: 1,
     },
   },
+  radius: "round",
+  // Add other theme options here
+  // chatkit.studio/playground to explore config options
 });
