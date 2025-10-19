@@ -22,10 +22,17 @@ npm install
 
 ### 2. Create your environment file
 
-Copy the example file and fill in the required values:
+Create a `.env.local` file in the root directory with the following variables:
 
 ```bash
-cp .env.example .env.local
+# OpenAI API Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+
+# ChatKit Workflow Configuration  
+NEXT_PUBLIC_CHATKIT_WORKFLOW_ID=wf_your_workflow_id_here
+
+# Optional: Custom ChatKit API Base URL (defaults to https://api.openai.com)
+# CHATKIT_API_BASE=https://api.openai.com
 ```
 
 You can get your workflow id from the [Agent Builder](https://platform.openai.com/agent-builder) interface, after clicking "Publish":
@@ -52,13 +59,70 @@ npm run dev
 
 Visit `http://localhost:3000` and start chatting. Use the prompts on the start screen to verify your workflow connection, then customize the UI or prompt list in [`lib/config.ts`](lib/config.ts) and [`components/ChatKitPanel.tsx`](components/ChatKitPanel.tsx).
 
-### 5. Deploy your app
+### 5. Deploy to Vercel
+
+This app is ready to deploy to Vercel with minimal configuration. Follow these steps:
+
+#### Option A: Deploy with Vercel CLI
+
+1. Install Vercel CLI:
+```bash
+npm i -g vercel
+```
+
+2. Login to Vercel:
+```bash
+vercel login
+```
+
+3. Deploy:
+```bash
+vercel
+```
+
+4. Set environment variables in Vercel dashboard or via CLI:
+```bash
+vercel env add OPENAI_API_KEY
+vercel env add NEXT_PUBLIC_CHATKIT_WORKFLOW_ID
+```
+
+#### Option B: Deploy via GitHub Integration
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel at [vercel.com](https://vercel.com)
+3. Add environment variables in the Vercel dashboard:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID`: Your ChatKit workflow ID
+
+#### Required Environment Variables for Production
+
+Make sure to set these environment variables in your Vercel project:
+
+- `OPENAI_API_KEY` — Your OpenAI API key (get from [OpenAI API Keys](https://platform.openai.com/api-keys))
+- `NEXT_PUBLIC_CHATKIT_WORKFLOW_ID` — Your ChatKit workflow ID (get from [Agent Builder](https://platform.openai.com/agent-builder))
+
+#### Domain Verification
+
+Before deploying your app, you need to verify the domain by adding it to the [Domain allowlist](https://platform.openai.com/settings/organization/security/domain-allowlist) on your OpenAI dashboard.
+
+#### Local Build Test
+
+Test the build process locally before deploying:
 
 ```bash
 npm run build
+npm start
 ```
 
-Before deploying your app, you need to verify the domain by adding it to the [Domain allowlist](https://platform.openai.com/settings/organization/security/domain-allowlist) on your dashboard.
+#### Pre-Deployment Checklist
+
+Before deploying to Vercel, make sure you have:
+
+- [ ] Created a ChatKit workflow in [Agent Builder](https://platform.openai.com/agent-builder)
+- [ ] Obtained your OpenAI API key from [OpenAI API Keys](https://platform.openai.com/api-keys)
+- [ ] Set up environment variables in Vercel dashboard
+- [ ] Added your domain to OpenAI's [Domain allowlist](https://platform.openai.com/settings/organization/security/domain-allowlist)
+- [ ] Tested the build locally with `npm run build`
 
 ## Customization Tips
 
